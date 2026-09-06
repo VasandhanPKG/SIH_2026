@@ -2,92 +2,88 @@ import * as THREE from "three";
 
 /**
  * UndergroundMineEnvironment
- * An authentic, highly detailed 3D underground coal/metal mine environment:
- * - Continuous rough rock cavern walls and arched ceilings
- * - Heavy wooden timber support sets & steel arch brackets
- * - Minecart rail tracks & wooden ties running along the tunnel floor
- * - Overhead ribbed industrial ventilation ducting (yellow flex pipe)
- * - Wall-mounted electrical conduits & high-pressure utility pipes
- * - Hanging caged halogen mining lamps casting localized light pools
- * - Rock rubble, fallen boulders, and ceiling strata fracture fissures
- * - Subsurface elevator shaft portal / Base Station C2
- * - Reinforced Refuge Chamber 7B with heavy steel blast door & safety beacon
- * - Drifting underground dust particulates & atmospheric fog
+ * Professional, high-visibility 3D underground coal/metal mine digital twin:
+ * - High-contrast readable rock cavern walls and vaulted arches
+ * - Base Station command hub with charging terminal, battery racks, crates & comms
+ * - Navigable tunnel network: Main Haulage, Junction Alpha, Hazard Tunnel B-04, South Incline Bypass, Refuge Chamber 7B
+ * - Steel rail tracks with wooden railway ties along the floor
+ * - Repeating mining timber sets (legs, collars, steel gussets, horizontal lagging)
+ * - Overhead flexible yellow ventilation ducts & wall cable trays
+ * - Industrial caged halogen mining lamps casting visible warm light pools
+ * - Mine carts, barrels, oxygen tanks, tool chests, and safety signs
+ * - Collapsed rockfall debris & ceiling fracture zone
+ * - Atmospheric dust particulates
  */
 export class UndergroundMineEnvironment {
   public group: THREE.Group;
   public dustParticles: THREE.Points;
-  public lidarScanCloud: THREE.Points;
   public tunnelLights: THREE.PointLight[] = [];
 
   constructor() {
     this.group = new THREE.Group();
 
-    // 1. Mine Cavern Floor with embedded rock roughness
+    // 1. Mine Cavern Floor (Readable high-contrast gravel shale)
     this.buildMineFloor();
 
-    // 2. Continuous Enclosed Rock Tunnel Walls & Arched Ceilings
-    this.buildRockTunnelNetwork();
+    // 2. Continuous Rocky Cavern Walls & Arched Ceilings
+    this.buildRockTunnelCaverns();
 
-    // 3. Minecart Rail Tracks & Wooden Ties along the floor
-    this.buildMinecartRails();
+    // 3. Base Station Command Area (x: -35 to -28)
+    this.buildBaseStation();
 
-    // 4. Heavy Timber Sets & Steel Arch Bracing along all tunnels
-    this.buildTimberSupportSets();
+    // 4. Steel Rail Tracks & Wooden Sleepers
+    this.buildMineRailTracks();
 
-    // 5. Overhead Mine Ventilation Ducts (Flexible ribbed yellow ducting)
-    this.buildVentilationDucting();
+    // 5. Heavy Mining Timber Sets & Steel Arches
+    this.buildTimberSupportStructures();
 
-    // 6. Wall Conduit Cables & Utility Pipes
-    this.buildWallConduitsAndPipes();
+    // 6. Overhead Flexible Ventilation Ducts (Yellow/Orange)
+    this.buildVentilationDucts();
 
-    // 7. Hanging Industrial Caged Halogen Tunnel Lanterns
-    this.buildIndustrialCagedLamps();
+    // 7. Wall Cable Trays, Power Conduits & High-Pressure Pipes
+    this.buildWallUtilities();
 
-    // 8. Mining Hazard Signs & Directional Markers
-    this.buildMiningSafetySignage();
+    // 8. Industrial Mining Props (Minecart, Crates, Barrels, O2 Tanks, Toolboxes)
+    this.buildMiningProps();
 
-    // 9. Base Station / Shaft Elevator Portal (-35m)
-    this.buildSubsurfaceShaftPortal();
+    // 9. Hanging Industrial Caged Halogen Lamps
+    this.buildCagedLamps();
 
-    // 10. Refuge Chamber 7B with Reinforced Blast Door (x=29, z=-7.8)
-    this.buildRefugeChamber();
+    // 10. Mining Safety Signage & Direction Boards
+    this.buildSafetySignage();
 
-    // 11. Collapsed Rockfall Rubble in Tunnel B-04
+    // 11. Collapsed Rockfall & Rubble Piles in Tunnel B-04
     this.buildRockfallAndDebris();
 
-    // 12. Atmospheric Mine Dust Particles & LiDAR registration cloud
+    // 12. Refuge Chamber 7B with Steel Blast Door (x: 29, z: -8)
+    this.buildRefugeChamber();
+
+    // 13. Atmospheric Dust Particles
     this.dustParticles = this.buildDustParticles();
     this.group.add(this.dustParticles);
-
-    this.lidarScanCloud = this.buildLidarCloud();
-    this.group.add(this.lidarScanCloud);
   }
 
   private buildMineFloor() {
-    // Large cavern floor
-    const floorGeom = new THREE.PlaneGeometry(120, 80, 60, 60);
+    const floorGeom = new THREE.PlaneGeometry(120, 80, 48, 48);
     floorGeom.rotateX(-Math.PI / 2);
 
     const pos = floorGeom.attributes.position;
     for (let i = 0; i < pos.count; i++) {
       const x = pos.getX(i);
       const z = pos.getZ(i);
-      // Rough terrain on sides, smoother track in the center
       const distFromCenter = Math.abs(z);
-      if (distFromCenter > 2.5) {
-        const noise = (Math.sin(x * 0.4) * Math.cos(z * 0.4)) * 0.4;
+      if (distFromCenter > 3.0) {
+        const noise = (Math.sin(x * 0.3) * Math.cos(z * 0.3)) * 0.35;
         pos.setY(i, Math.max(0, noise));
       } else {
-        // Minor roughness on haulage path
-        pos.setY(i, (Math.sin(x * 1.5) * 0.04));
+        pos.setY(i, Math.sin(x * 1.8) * 0.03);
       }
     }
     floorGeom.computeVertexNormals();
 
     const floorMat = new THREE.MeshStandardMaterial({
-      color: 0x181e29, // Dark coal / rock shale gravel
-      roughness: 0.95,
+      color: 0x242e3f, // Readable slate-charcoal gravel floor (high contrast)
+      roughness: 0.85,
       metalness: 0.15,
       flatShading: true,
     });
@@ -96,22 +92,29 @@ export class UndergroundMineEnvironment {
     this.group.add(floor);
   }
 
-  private buildRockTunnelNetwork() {
+  private buildRockTunnelCaverns() {
+    // High-contrast readable rock material (Slate Grey with warm cavity tones)
     const rockMat = new THREE.MeshStandardMaterial({
-      color: 0x0f172a, // Dark jagged coal/rock walls
-      roughness: 0.92,
+      color: 0x1e293b, // Slate-800 readable rock
+      roughness: 0.85,
       metalness: 0.2,
       flatShading: true,
     });
 
-    const createCavernWall = (x: number, y: number, z: number, w: number, h: number, d: number, rotY = 0) => {
-      const wallGeom = new THREE.BoxGeometry(w, h, d, 12, 6, 8);
+    const innerWallMat = new THREE.MeshStandardMaterial({
+      color: 0x334155, // Slate-700 illuminated rock facets
+      roughness: 0.8,
+      metalness: 0.15,
+      flatShading: true,
+    });
+
+    const createRockWall = (x: number, y: number, z: number, w: number, h: number, d: number, rotY = 0) => {
+      const wallGeom = new THREE.BoxGeometry(w, h, d, 10, 6, 6);
       const p = wallGeom.attributes.position;
-      // Displace vertices to create authentic jagged rock faces
       for (let i = 0; i < p.count; i++) {
-        p.setX(i, p.getX(i) + (Math.sin(i * 1.7) * 0.25));
-        p.setY(i, p.getY(i) + (Math.cos(i * 1.3) * 0.15));
-        p.setZ(i, p.getZ(i) + (Math.sin(i * 2.1) * 0.25));
+        p.setX(i, p.getX(i) + (Math.sin(i * 1.4) * 0.28));
+        p.setY(i, p.getY(i) + (Math.cos(i * 1.6) * 0.18));
+        p.setZ(i, p.getZ(i) + (Math.sin(i * 2.2) * 0.28));
       }
       wallGeom.computeVertexNormals();
       const wall = new THREE.Mesh(wallGeom, rockMat);
@@ -122,91 +125,160 @@ export class UndergroundMineEnvironment {
       this.group.add(wall);
     };
 
-    // Tunnel A North Wall (z = -3.8)
-    createCavernWall(-18, 2.4, -4.0, 34, 5.0, 1.8);
-    // Tunnel A South Wall (z = 3.8)
-    createCavernWall(-18, 2.4, 4.0, 34, 5.0, 1.8);
+    // Tunnel A North Rock Wall (z = -4.2)
+    createRockWall(-16, 2.6, -4.4, 36, 5.2, 1.8);
+    // Tunnel A South Rock Wall (z = 4.2)
+    createRockWall(-16, 2.6, 4.4, 36, 5.2, 1.8);
 
-    // Hazard Tunnel B-04 (North-East branch)
-    createCavernWall(15, 2.4, -12.5, 30, 5.0, 1.8, -Math.PI / 10);
-    createCavernWall(11, 2.4, -2.8, 22, 5.0, 1.8, -Math.PI / 10);
+    // Hazard Tunnel B-04 North Wall (Angled North-East)
+    createRockWall(16, 2.6, -13.0, 32, 5.2, 1.8, -Math.PI / 10);
+    createRockWall(12, 2.6, -2.8, 22, 5.2, 1.8, -Math.PI / 10);
 
-    // South Incline Bypass (South-East branch)
-    createCavernWall(15, 2.4, 12.5, 30, 5.0, 1.8, Math.PI / 10);
-    createCavernWall(13, 2.4, 2.8, 22, 5.0, 1.8, Math.PI / 10);
+    // South Incline Bypass South Wall (Angled South-East)
+    createRockWall(16, 2.6, 13.0, 32, 5.2, 1.8, Math.PI / 10);
+    createRockWall(12, 2.6, 2.8, 22, 5.2, 1.8, Math.PI / 10);
 
-    // Tunnel Arched Rock Ceilings (Enclosed mine cavern feel)
-    const createArchedRoof = (x: number, y: number, z: number, length: number, radius: number, rotY = 0) => {
+    // Vaulted Arched Rock Ceilings (Visible vaulted cavern roof)
+    const createVaultedRoof = (x: number, y: number, z: number, length: number, radius: number, rotY = 0) => {
       const roofGeom = new THREE.CylinderGeometry(radius, radius, length, 16, 4, true, 0, Math.PI);
       roofGeom.rotateZ(Math.PI / 2);
       roofGeom.rotateY(Math.PI / 2);
 
       const p = roofGeom.attributes.position;
       for (let i = 0; i < p.count; i++) {
-        p.setY(i, p.getY(i) + (Math.sin(i * 2.5) * 0.18));
+        p.setY(i, p.getY(i) + (Math.sin(i * 2.0) * 0.15));
       }
       roofGeom.computeVertexNormals();
 
-      const roofMat = new THREE.MeshStandardMaterial({
-        color: 0x090d16,
-        roughness: 0.98,
-        side: THREE.BackSide,
-        flatShading: true,
-      });
-      const roof = new THREE.Mesh(roofGeom, roofMat);
+      const roof = new THREE.Mesh(roofGeom, innerWallMat);
       roof.position.set(x, y, z);
       roof.rotation.y = rotY;
       this.group.add(roof);
     };
 
-    // Main Tunnel A Roof
-    createArchedRoof(-18, 2.2, 0, 34, 4.4);
-    // Hazard Tunnel Roof
-    createArchedRoof(14, 2.2, -6.8, 28, 4.4, -Math.PI / 10);
-    // South Incline Roof
-    createArchedRoof(14, 2.2, 6.8, 28, 4.4, Math.PI / 10);
+    createVaultedRoof(-16, 2.6, 0, 36, 4.6);
+    createVaultedRoof(14, 2.6, -7.0, 30, 4.6, -Math.PI / 10);
+    createVaultedRoof(14, 2.6, 7.0, 30, 4.6, Math.PI / 10);
   }
 
-  private buildMinecartRails() {
+  private buildBaseStation() {
+    const baseGroup = new THREE.Group();
+    baseGroup.position.set(-32, 0, 0);
+
+    // Concrete Base Platform with Yellow Hazard Border
+    const padMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.7 });
+    const pad = new THREE.Mesh(new THREE.BoxGeometry(8.0, 0.25, 7.0), padMat);
+    pad.position.set(0, 0.12, 0);
+    pad.receiveShadow = true;
+    baseGroup.add(pad);
+
+    // Hazard Border Stripes on Pad
+    const stripeMat = new THREE.MeshBasicMaterial({ color: 0xfacc15 });
+    const stripeL = new THREE.Mesh(new THREE.BoxGeometry(8.0, 0.28, 0.25), stripeMat);
+    stripeL.position.set(0, 0.14, 3.4);
+    baseGroup.add(stripeL);
+
+    const stripeR = new THREE.Mesh(new THREE.BoxGeometry(8.0, 0.28, 0.25), stripeMat);
+    stripeR.position.set(0, 0.14, -3.4);
+    baseGroup.add(stripeR);
+
+    // Rover Charging Dock Terminal (High-Tech Engineering Unit)
+    const chargerMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, metalness: 0.85, roughness: 0.25 });
+    const charger = new THREE.Mesh(new THREE.BoxGeometry(1.2, 2.4, 0.8), chargerMat);
+    charger.position.set(-3.2, 1.2, -2.2);
+    charger.castShadow = true;
+    baseGroup.add(charger);
+
+    // Glowing Terminal Screen (Cyan)
+    const screenMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8 });
+    const screen = new THREE.Mesh(new THREE.PlaneGeometry(0.8, 0.6), screenMat);
+    screen.position.set(-2.58, 1.6, -2.2);
+    screen.rotation.y = Math.PI / 2;
+    baseGroup.add(screen);
+
+    // Power Generator / Battery Pack Module
+    const genMat = new THREE.MeshStandardMaterial({ color: 0xf97316, roughness: 0.5 }); // Safety Orange
+    const generator = new THREE.Mesh(new THREE.BoxGeometry(1.8, 1.4, 1.2), genMat);
+    generator.position.set(-3.0, 0.7, 2.2);
+    generator.castShadow = true;
+    baseGroup.add(generator);
+
+    // Concrete Shaft Portal Entrance Frame (-36m)
+    const portalMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.5, roughness: 0.6 });
+    const archFrame = new THREE.Mesh(new THREE.BoxGeometry(1.8, 5.6, 8.2), portalMat);
+    archFrame.position.set(-4.0, 2.8, 0);
+    baseGroup.add(archFrame);
+
+    // Base Station Header Sign
+    const signMat = new THREE.MeshBasicMaterial({ color: 0x0284c7 }); // Blue C2 Header
+    const sign = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.7, 5.4), signMat);
+    sign.position.set(-3.0, 5.0, 0);
+    baseGroup.add(sign);
+
+    // Mesh Relay Antenna Mast
+    const towerGeom = new THREE.CylinderGeometry(0.12, 0.2, 7.8, 8);
+    const towerMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.9 });
+    const tower = new THREE.Mesh(towerGeom, towerMat);
+    tower.position.set(-3.2, 3.9, 3.2);
+    baseGroup.add(tower);
+
+    // Pulsing Base Station Blue Beacon
+    const beaconGeom = new THREE.SphereGeometry(0.25, 12, 12);
+    const beaconMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8 });
+    const beacon = new THREE.Mesh(beaconGeom, beaconMat);
+    beacon.position.set(-3.2, 7.8, 3.2);
+    baseGroup.add(beacon);
+
+    // Base Station Warm Floodlight
+    const baseLight = new THREE.PointLight(0x93c5fd, 2.4, 25, 1.5);
+    baseLight.position.set(-1.0, 4.5, 0);
+    baseLight.castShadow = true;
+    baseGroup.add(baseLight);
+    this.tunnelLights.push(baseLight);
+
+    this.group.add(baseGroup);
+  }
+
+  private buildMineRailTracks() {
     const railMat = new THREE.MeshStandardMaterial({
-      color: 0x64748b, // Steel rails
+      color: 0x94a3b8, // Bright steel rails (high visibility)
       metalness: 0.9,
-      roughness: 0.3,
+      roughness: 0.25,
     });
     const tieMat = new THREE.MeshStandardMaterial({
-      color: 0x451a03, // Creosote treated wooden ties / sleepers
+      color: 0x5c2b09, // Creosote treated wooden ties
       roughness: 0.9,
     });
 
     const railGroup = new THREE.Group();
 
-    // 1. Wooden Ties along Main Tunnel A (x: -32 to 0)
-    for (let x = -32; x <= 0; x += 1.4) {
-      const tie = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.08, 2.2), tieMat);
-      tie.position.set(x, 0.04, 0);
+    // 1. Wooden Ties along Main Haulage Way (x: -30 to 0)
+    for (let x = -30; x <= 0; x += 1.3) {
+      const tie = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.1, 2.2), tieMat);
+      tie.position.set(x, 0.05, 0);
       tie.receiveShadow = true;
       railGroup.add(tie);
     }
 
     // Steel Rails Left & Right (Gauge = 1.4m)
-    const railGeom = new THREE.BoxGeometry(32, 0.12, 0.08);
+    const railGeom = new THREE.BoxGeometry(30, 0.14, 0.09);
     const railL = new THREE.Mesh(railGeom, railMat);
-    railL.position.set(-16, 0.12, 0.7);
+    railL.position.set(-15, 0.14, 0.7);
     railL.castShadow = true;
     railGroup.add(railL);
 
     const railR = new THREE.Mesh(railGeom, railMat);
-    railR.position.set(-16, 0.12, -0.7);
+    railR.position.set(-15, 0.14, -0.7);
     railR.castShadow = true;
     railGroup.add(railR);
 
-    // 2. Ties and rails branching into South Incline (Route B)
-    for (let i = 0; i <= 20; i += 1.4) {
-      const t = i / 20;
+    // 2. Ties and rails branching along South Incline (Route B)
+    for (let i = 0; i <= 22; i += 1.3) {
+      const t = i / 22;
       const x = 0 + t * 24;
       const z = 0 + t * 7.5;
-      const tie = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.08, 2.2), tieMat);
-      tie.position.set(x, 0.04, z);
+      const tie = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.1, 2.2), tieMat);
+      tie.position.set(x, 0.05, z);
       tie.rotation.y = Math.PI / 10;
       railGroup.add(tie);
     }
@@ -214,23 +286,27 @@ export class UndergroundMineEnvironment {
     this.group.add(railGroup);
   }
 
-  private buildTimberSupportSets() {
+  private buildTimberSupportStructures() {
     const woodMat = new THREE.MeshStandardMaterial({
-      color: 0x78350f, // Heavy rough timber beams
-      roughness: 0.85,
+      color: 0x854d0e, // Rich golden-brown timber sets (visible & warm)
+      roughness: 0.8,
     });
     const steelMat = new THREE.MeshStandardMaterial({
-      color: 0x475569, // Structural steel corner gussets
+      color: 0x475569, // Steel structural brackets
       metalness: 0.8,
-      roughness: 0.35,
+      roughness: 0.3,
+    });
+    const boardMat = new THREE.MeshStandardMaterial({
+      color: 0x713f12,
+      roughness: 0.9,
     });
 
     const setPositions = [
-      { x: -30, z: 0, rotY: 0 },
-      { x: -22, z: 0, rotY: 0 },
+      { x: -28, z: 0, rotY: 0 },
+      { x: -21, z: 0, rotY: 0 },
       { x: -14, z: 0, rotY: 0 },
-      { x: -6, z: 0, rotY: 0 },
-      { x: 1, z: 0, rotY: 0 },
+      { x: -7, z: 0, rotY: 0 },
+      { x: 0, z: 0, rotY: 0 },
       // Hazard Tunnel Sets
       { x: 7, z: -4.5, rotY: -Math.PI / 10 },
       { x: 15, z: -7.2, rotY: -Math.PI / 10 },
@@ -242,51 +318,60 @@ export class UndergroundMineEnvironment {
     ];
 
     setPositions.forEach((pos) => {
-      const arch = new THREE.Group();
-      arch.position.set(pos.x, 0, pos.z);
-      arch.rotation.y = pos.rotY;
+      const set = new THREE.Group();
+      set.position.set(pos.x, 0, pos.z);
+      set.rotation.y = pos.rotY;
 
-      // Left Column (Timber Post)
-      const postL = new THREE.Mesh(new THREE.BoxGeometry(0.38, 4.4, 0.38), woodMat);
-      postL.position.set(0, 2.2, -3.1);
+      // Left Timber Post
+      const postL = new THREE.Mesh(new THREE.BoxGeometry(0.42, 4.4, 0.42), woodMat);
+      postL.position.set(0, 2.2, -3.2);
       postL.castShadow = true;
-      arch.add(postL);
+      set.add(postL);
 
-      // Right Column (Timber Post)
-      const postR = new THREE.Mesh(new THREE.BoxGeometry(0.38, 4.4, 0.38), woodMat);
-      postR.position.set(0, 2.2, 3.1);
+      // Right Timber Post
+      const postR = new THREE.Mesh(new THREE.BoxGeometry(0.42, 4.4, 0.42), woodMat);
+      postR.position.set(0, 2.2, 3.2);
       postR.castShadow = true;
-      arch.add(postR);
+      set.add(postR);
 
-      // Top Timber Collar / Crossbeam
-      const beam = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.4, 6.6), woodMat);
+      // Top Cross Collar / Crossbeam
+      const beam = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.42, 6.8), woodMat);
       beam.position.set(0, 4.3, 0);
       beam.castShadow = true;
-      arch.add(beam);
+      set.add(beam);
 
-      // Steel gusset brackets
-      const bracketL = new THREE.Mesh(new THREE.BoxGeometry(0.48, 0.48, 0.48), steelMat);
-      bracketL.position.set(0, 4.2, -3.0);
-      arch.add(bracketL);
+      // Steel Corner Brackets
+      const bracketL = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), steelMat);
+      bracketL.position.set(0, 4.2, -3.1);
+      set.add(bracketL);
 
-      const bracketR = new THREE.Mesh(new THREE.BoxGeometry(0.48, 0.48, 0.48), steelMat);
-      bracketR.position.set(0, 4.2, 3.0);
-      arch.add(bracketR);
+      const bracketR = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), steelMat);
+      bracketR.position.set(0, 4.2, 3.1);
+      set.add(bracketR);
 
-      this.group.add(arch);
+      // Horizontal Wall Lagging Boards
+      const boardL = new THREE.Mesh(new THREE.BoxGeometry(0.12, 1.2, 6.4), boardMat);
+      boardL.position.set(0, 1.8, -3.5);
+      set.add(boardL);
+
+      const boardR = new THREE.Mesh(new THREE.BoxGeometry(0.12, 1.2, 6.4), boardMat);
+      boardR.position.set(0, 1.8, 3.5);
+      set.add(boardR);
+
+      this.group.add(set);
     });
   }
 
-  private buildVentilationDucting() {
-    // Overhead flexible yellow/orange ribbed ventilation duct
+  private buildVentilationDucts() {
+    // Overhead flexible yellow ventilation tube running along the roof
     const ductMat = new THREE.MeshStandardMaterial({
-      color: 0xf59e0b, // Safety yellow/orange mine vent bag
-      roughness: 0.6,
-      metalness: 0.2,
+      color: 0xfacc15, // Bright industrial safety yellow
+      roughness: 0.5,
+      metalness: 0.15,
     });
 
     const createDuct = (x: number, y: number, z: number, length: number, rotY = 0) => {
-      const ductGeom = new THREE.CylinderGeometry(0.42, 0.42, length, 16);
+      const ductGeom = new THREE.CylinderGeometry(0.48, 0.48, length, 16);
       ductGeom.rotateZ(Math.PI / 2);
       const duct = new THREE.Mesh(ductGeom, ductMat);
       duct.position.set(x, y, z);
@@ -295,16 +380,14 @@ export class UndergroundMineEnvironment {
       this.group.add(duct);
     };
 
-    // Main tunnel vent line
-    createDuct(-16, 3.8, -2.1, 32);
-    // Branching into South Incline
-    createDuct(14, 3.8, 4.8, 26, Math.PI / 10);
+    createDuct(-15, 3.9, -2.0, 32);
+    createDuct(14, 3.9, 4.6, 26, Math.PI / 10);
   }
 
-  private buildWallConduitsAndPipes() {
+  private buildWallUtilities() {
     const pipeMat = new THREE.MeshStandardMaterial({
-      color: 0x334155, // Steel utility water/air pipe
-      metalness: 0.8,
+      color: 0x64748b, // Steel water / compressed air pipe
+      metalness: 0.85,
       roughness: 0.3,
     });
     const cableMat = new THREE.MeshStandardMaterial({
@@ -313,169 +396,166 @@ export class UndergroundMineEnvironment {
     });
 
     const createPipeRun = (x: number, y: number, z: number, length: number, rotY = 0) => {
-      // Pipe
-      const pipe = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, length, 8), pipeMat);
+      // Steel Pipe
+      const pipe = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, length, 10), pipeMat);
       pipe.rotation.z = Math.PI / 2;
       pipe.position.set(x, y, z);
       pipe.rotation.y = rotY;
       this.group.add(pipe);
 
-      // Power Cable bundle below pipe
-      const cable = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, length, 6), cableMat);
+      // Power Cable Bundle
+      const cable = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, length, 8), cableMat);
       cable.rotation.z = Math.PI / 2;
-      cable.position.set(x, y - 0.2, z);
+      cable.position.set(x, y - 0.22, z);
       cable.rotation.y = rotY;
       this.group.add(cable);
     };
 
-    createPipeRun(-16, 1.6, -3.4, 32);
-    createPipeRun(14, 1.6, -9.5, 26, -Math.PI / 10);
-    createPipeRun(14, 1.6, 9.5, 26, Math.PI / 10);
+    createPipeRun(-15, 1.8, -3.5, 32);
+    createPipeRun(14, 1.8, -10.0, 26, -Math.PI / 10);
+    createPipeRun(14, 1.8, 10.0, 26, Math.PI / 10);
   }
 
-  private buildIndustrialCagedLamps() {
+  private buildMiningProps() {
+    // 1. Traditional Ore Minecart parked near junction (x = -8, z = 2.0)
+    const cartGroup = new THREE.Group();
+    cartGroup.position.set(-8, 0, 2.0);
+
+    const tubMat = new THREE.MeshStandardMaterial({ color: 0x475569, metalness: 0.8, roughness: 0.4 });
+    const tub = new THREE.Mesh(new THREE.BoxGeometry(1.8, 1.0, 1.2), tubMat);
+    tub.position.y = 0.75;
+    tub.castShadow = true;
+    cartGroup.add(tub);
+
+    // Minecart Wheels
+    const cartWheelMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, metalness: 0.9 });
+    const wheelGeom = new THREE.CylinderGeometry(0.24, 0.24, 0.12, 12);
+    wheelGeom.rotateX(Math.PI / 2);
+
+    [-0.6, 0.6].forEach((wx) => {
+      [-0.65, 0.65].forEach((wz) => {
+        const w = new THREE.Mesh(wheelGeom, cartWheelMat);
+        w.position.set(wx, 0.24, wz);
+        cartGroup.add(w);
+      });
+    });
+    this.group.add(cartGroup);
+
+    // 2. Equipment Wooden Crates & Toolboxes
+    const crateMat = new THREE.MeshStandardMaterial({ color: 0xa16207, roughness: 0.8 });
+    const crate1 = new THREE.Mesh(new THREE.BoxGeometry(1.0, 1.0, 1.0), crateMat);
+    crate1.position.set(-18, 0.5, 2.8);
+    crate1.castShadow = true;
+    this.group.add(crate1);
+
+    const crate2 = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.8, 0.8), crateMat);
+    crate2.position.set(-17.2, 0.4, 2.9);
+    crate2.castShadow = true;
+    this.group.add(crate2);
+
+    // 3. Fuel Barrels (Blue & Red)
+    const barrelMatBlue = new THREE.MeshStandardMaterial({ color: 0x1d4ed8, roughness: 0.5 });
+    const barrel1 = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.38, 1.1, 12), barrelMatBlue);
+    barrel1.position.set(-19, 0.55, -2.8);
+    barrel1.castShadow = true;
+    this.group.add(barrel1);
+
+    const barrelMatRed = new THREE.MeshStandardMaterial({ color: 0xb91c1c, roughness: 0.5 });
+    const barrel2 = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.38, 1.1, 12), barrelMatRed);
+    barrel2.position.set(-20, 0.55, -2.7);
+    barrel2.castShadow = true;
+    this.group.add(barrel2);
+
+    // 4. Oxygen Bottles / Breathing Gas Cylinders (Green)
+    const o2Mat = new THREE.MeshStandardMaterial({ color: 0x16a34a, metalness: 0.6, roughness: 0.3 });
+    const o2Cylinder = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.18, 1.2, 10), o2Mat);
+    o2Cylinder.position.set(27, 0.6, -6.5);
+    this.group.add(o2Cylinder);
+  }
+
+  private buildCagedLamps() {
     const lampPositions = [
-      { x: -28, y: 4.1, z: 0, color: 0xfef08a, intensity: 1.6 },
-      { x: -14, y: 4.1, z: 0, color: 0xfef08a, intensity: 1.6 },
-      { x: 1, y: 4.1, z: 0, color: 0x93c5fd, intensity: 1.8 },
-      { x: 15, y: 4.1, z: 7.2, color: 0x86efac, intensity: 1.5 },
-      { x: 15, y: 4.1, z: -7.2, color: 0xfca5a5, intensity: 1.3 },
+      { x: -28, y: 4.1, z: 0, color: 0xfde047, intensity: 2.2 },
+      { x: -21, y: 4.1, z: 0, color: 0xfde047, intensity: 2.2 },
+      { x: -14, y: 4.1, z: 0, color: 0xfde047, intensity: 2.2 },
+      { x: -7, y: 4.1, z: 0, color: 0xfde047, intensity: 2.2 },
+      { x: 0, y: 4.1, z: 0, color: 0x93c5fd, intensity: 2.4 }, // Junction Alpha (Cyan daylight)
+      { x: 15, y: 4.1, z: 7.2, color: 0x86efac, intensity: 2.0 }, // Safe route
+      { x: 15, y: 4.1, z: -7.2, color: 0xfca5a5, intensity: 1.8 }, // Hazard zone
     ];
 
     lampPositions.forEach((l) => {
-      // Caged lamp fixture
-      const fixtureMat = new THREE.MeshStandardMaterial({ color: 0x475569, metalness: 0.8 });
-      const fixture = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.18, 0.35, 8), fixtureMat);
+      // Caged Lamp Frame
+      const fixtureMat = new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.9, roughness: 0.2 });
+      const fixture = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.22, 0.38, 8), fixtureMat);
       fixture.position.set(l.x, l.y, l.z);
       this.group.add(fixture);
 
-      // Glowing glass bulb
+      // Glowing Glass Bulb
       const bulb = new THREE.Mesh(
-        new THREE.SphereGeometry(0.14, 12, 12),
+        new THREE.SphereGeometry(0.16, 12, 12),
         new THREE.MeshBasicMaterial({ color: l.color })
       );
-      bulb.position.set(l.x, l.y - 0.15, l.z);
+      bulb.position.set(l.x, l.y - 0.16, l.z);
       this.group.add(bulb);
 
-      // PointLight illuminating the tunnel section
-      const light = new THREE.PointLight(l.color, l.intensity, 22, 1.6);
-      light.position.set(l.x, l.y - 0.3, l.z);
+      // Visible PointLight casting light pool
+      const light = new THREE.PointLight(l.color, l.intensity, 24, 1.4);
+      light.position.set(l.x, l.y - 0.35, l.z);
       light.castShadow = true;
       this.group.add(light);
       this.tunnelLights.push(light);
     });
   }
 
-  private buildMiningSafetySignage() {
+  private buildSafetySignage() {
     // 1. Hazard Warning Sign at entrance of Tunnel B-04
     const signGroup = new THREE.Group();
-    signGroup.position.set(4, 2.0, -2.6);
+    signGroup.position.set(3.5, 2.1, -2.4);
     signGroup.rotation.y = -Math.PI / 10;
 
     const signBoard = new THREE.Mesh(
-      new THREE.BoxGeometry(0.08, 0.8, 1.2),
-      new THREE.MeshStandardMaterial({ color: 0xd97706, roughness: 0.5 })
+      new THREE.BoxGeometry(0.08, 0.85, 1.3),
+      new THREE.MeshStandardMaterial({ color: 0xd97706, roughness: 0.4 })
     );
     signGroup.add(signBoard);
 
-    // Hazard Stripes Header
+    // Hazard Stripes
     const stripe = new THREE.Mesh(
-      new THREE.BoxGeometry(0.09, 0.2, 1.15),
+      new THREE.BoxGeometry(0.09, 0.22, 1.25),
       new THREE.MeshBasicMaterial({ color: 0x0f172a })
     );
-    stripe.position.y = 0.25;
+    stripe.position.y = 0.28;
     signGroup.add(stripe);
-
     this.group.add(signGroup);
 
-    // 2. Safe Direction Arrow Sign at South Incline Bypass
+    // 2. Safe Direction Sign at South Incline Bypass
     const safeSignGroup = new THREE.Group();
-    safeSignGroup.position.set(4, 2.0, 2.6);
+    safeSignGroup.position.set(3.5, 2.1, 2.4);
     safeSignGroup.rotation.y = Math.PI / 10;
 
     const safeBoard = new THREE.Mesh(
-      new THREE.BoxGeometry(0.08, 0.6, 1.0),
-      new THREE.MeshStandardMaterial({ color: 0x059669, roughness: 0.5 })
+      new THREE.BoxGeometry(0.08, 0.7, 1.1),
+      new THREE.MeshStandardMaterial({ color: 0x059669, roughness: 0.4 })
     );
     safeSignGroup.add(safeBoard);
     this.group.add(safeSignGroup);
   }
 
-  private buildSubsurfaceShaftPortal() {
-    const portalGroup = new THREE.Group();
-    portalGroup.position.set(-35, 0, 0);
-
-    // Reinforced Concrete Tunnel Entrance Portal
-    const portalMat = new THREE.MeshStandardMaterial({
-      color: 0x1e293b,
-      roughness: 0.8,
-      metalness: 0.3,
-    });
-    const archFrame = new THREE.Mesh(new THREE.BoxGeometry(1.8, 5.6, 8.2), portalMat);
-    archFrame.position.set(0, 2.8, 0);
-    portalGroup.add(archFrame);
-
-    // Yellow / Black Hazard Chevron Header
-    const signMat = new THREE.MeshBasicMaterial({ color: 0xfacc15 });
-    const sign = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.65, 5.4), signMat);
-    sign.position.set(0.95, 5.0, 0);
-    portalGroup.add(sign);
-
-    // Subsurface Mesh Antenna Tower
-    const towerGeom = new THREE.CylinderGeometry(0.12, 0.22, 7.5, 8);
-    const towerMat = new THREE.MeshStandardMaterial({ color: 0x64748b, metalness: 0.85 });
-    const tower = new THREE.Mesh(towerGeom, towerMat);
-    tower.position.set(0.6, 3.75, 4.5);
-    portalGroup.add(tower);
-
-    // Flashing Base C2 Beacon
-    const beaconGeom = new THREE.SphereGeometry(0.25, 12, 12);
-    const beaconMat = new THREE.MeshBasicMaterial({ color: 0x3b82f6 });
-    const beacon = new THREE.Mesh(beaconGeom, beaconMat);
-    beacon.position.set(0.6, 7.6, 4.5);
-    portalGroup.add(beacon);
-
-    this.group.add(portalGroup);
-  }
-
-  private buildRefugeChamber() {
-    const chamberGroup = new THREE.Group();
-    chamberGroup.position.set(29, 0, -8);
-
-    // Heavy Reinforced Steel Blast Door Frame
-    const frameMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.9, roughness: 0.2 });
-    const frame = new THREE.Mesh(new THREE.BoxGeometry(1.2, 4.6, 5.4), frameMat);
-    frame.position.set(0, 2.3, 0);
-    chamberGroup.add(frame);
-
-    // Luminescent Green Refuge Chamber Sign
-    const signMat = new THREE.MeshBasicMaterial({ color: 0x10b981 });
-    const signMesh = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.55, 2.8), signMat);
-    signMesh.position.set(-0.65, 4.2, 0);
-    chamberGroup.add(signMesh);
-
-    // Chamber Interior Light
-    const innerLight = new THREE.PointLight(0x10b981, 2.2, 14, 1.4);
-    innerLight.position.set(1.5, 2.5, 0);
-    chamberGroup.add(innerLight);
-
-    this.group.add(chamberGroup);
-  }
-
   private buildRockfallAndDebris() {
     const rockMat = new THREE.MeshStandardMaterial({
-      color: 0x1e293b,
+      color: 0x334155, // Visible jagged boulders
       roughness: 0.95,
       flatShading: true,
     });
-    const rockGeom = new THREE.DodecahedronGeometry(0.7, 1);
+    const rockGeom = new THREE.DodecahedronGeometry(0.75, 1);
 
     const rubblePositions = [
-      { x: 13, y: 0.4, z: -5.5, s: 1.4 },
-      { x: 14, y: 0.35, z: -6.4, s: 1.0 },
-      { x: 15, y: 0.5, z: -5.0, s: 1.6 },
-      { x: 16, y: 0.4, z: -7.8, s: 1.3 },
-      { x: 17, y: 0.6, z: -8.2, s: 1.8 },
+      { x: 13, y: 0.45, z: -5.5, s: 1.4 },
+      { x: 14, y: 0.38, z: -6.4, s: 1.1 },
+      { x: 15, y: 0.55, z: -5.0, s: 1.7 },
+      { x: 16, y: 0.42, z: -7.8, s: 1.3 },
+      { x: 17, y: 0.65, z: -8.2, s: 1.9 },
     ];
 
     rubblePositions.forEach((pos) => {
@@ -487,6 +567,30 @@ export class UndergroundMineEnvironment {
       rock.receiveShadow = true;
       this.group.add(rock);
     });
+  }
+
+  private buildRefugeChamber() {
+    const chamberGroup = new THREE.Group();
+    chamberGroup.position.set(29, 0, -8);
+
+    // Heavy Steel Blast Door Frame
+    const frameMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.9, roughness: 0.25 });
+    const frame = new THREE.Mesh(new THREE.BoxGeometry(1.2, 4.6, 5.4), frameMat);
+    frame.position.set(0, 2.3, 0);
+    chamberGroup.add(frame);
+
+    // Luminescent Green Refuge Chamber Sign
+    const signMat = new THREE.MeshBasicMaterial({ color: 0x10b981 });
+    const signMesh = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.6, 3.0), signMat);
+    signMesh.position.set(-0.65, 4.2, 0);
+    chamberGroup.add(signMesh);
+
+    // Chamber Interior Light
+    const innerLight = new THREE.PointLight(0x10b981, 2.4, 15, 1.4);
+    innerLight.position.set(1.5, 2.5, 0);
+    chamberGroup.add(innerLight);
+
+    this.group.add(chamberGroup);
   }
 
   private buildDustParticles(): THREE.Points {
@@ -512,29 +616,6 @@ export class UndergroundMineEnvironment {
     return new THREE.Points(geometry, material);
   }
 
-  private buildLidarCloud(): THREE.Points {
-    const pointCount = 750;
-    const geometry = new THREE.BufferGeometry();
-    const positions = new Float32Array(pointCount * 3);
-
-    for (let i = 0; i < pointCount * 3; i += 3) {
-      positions[i] = (Math.random() - 0.5) * 75;
-      positions[i + 1] = Math.random() * 4.4 + 0.1;
-      positions[i + 2] = (Math.random() - 0.5) * 24;
-    }
-
-    geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-
-    const material = new THREE.PointsMaterial({
-      color: 0x38bdf8, // Cyan LiDAR point cloud
-      size: 0.06,
-      transparent: true,
-      opacity: 0.55,
-    });
-
-    return new THREE.Points(geometry, material);
-  }
-
   public update(deltaSec: number) {
     if (this.dustParticles) {
       const pos = this.dustParticles.geometry.attributes.position;
@@ -546,10 +627,10 @@ export class UndergroundMineEnvironment {
       pos.needsUpdate = true;
     }
 
-    // Flicker underground lantern lights subtly
+    // Gentle realistic flicker for halogen lamps
     this.tunnelLights.forEach((light, i) => {
-      const flicker = Math.sin(Date.now() / 200 + i * 3) * 0.1;
-      light.intensity = 1.5 + flicker;
+      const flicker = Math.sin(Date.now() / 200 + i * 3) * 0.08;
+      light.intensity = 2.0 + flicker;
     });
   }
 }
