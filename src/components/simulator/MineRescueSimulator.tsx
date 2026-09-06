@@ -7,7 +7,7 @@ import {
   simulationDataProvider,
   SimulatorWaypoint,
 } from "@/lib/simulatorConfig";
-import { MineScene3D, CameraViewMode, EnvironmentTheme } from "./MineScene3D";
+import { MineScene3D, CameraViewMode } from "./MineScene3D";
 import { FivePillarsTimeline } from "./FivePillarsTimeline";
 import { LiveTelemetryPanel } from "./LiveTelemetryPanel";
 import { ControlStationPanel } from "./ControlStationPanel";
@@ -27,7 +27,6 @@ export const MineRescueSimulator: React.FC<MineRescueSimulatorProps> = ({ embedd
   const [progressPct, setProgressPct] = useState<number>(0);
   const [speed, setSpeed] = useState<number>(1);
   const [cameraMode, setCameraMode] = useState<CameraViewMode>("CHASE_CAM");
-  const [theme, setTheme] = useState<EnvironmentTheme>("DARK_MINE");
   const [showDebriefModal, setShowDebriefModal] = useState<boolean>(false);
 
   // Compute interpolated waypoint
@@ -190,8 +189,6 @@ export const MineRescueSimulator: React.FC<MineRescueSimulatorProps> = ({ embedd
               currentWaypoint={currentWaypoint}
               cameraMode={cameraMode}
               onCameraModeChange={setCameraMode}
-              theme={theme}
-              onThemeChange={setTheme}
             />
           </div>
 
