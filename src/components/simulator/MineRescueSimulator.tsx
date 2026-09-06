@@ -7,22 +7,27 @@ import {
   simulationDataProvider,
   SimulatorWaypoint,
 } from "@/lib/simulatorConfig";
-import { MineScene3D, CameraViewMode } from "./MineScene3D";
+import { MineScene3D, CameraViewMode, EnvironmentTheme } from "./MineScene3D";
 import { FivePillarsTimeline } from "./FivePillarsTimeline";
 import { LiveTelemetryPanel } from "./LiveTelemetryPanel";
 import { ControlStationPanel } from "./ControlStationPanel";
 import { SimulatorMinimap } from "./SimulatorMinimap";
 import { SimulationControls } from "./SimulationControls";
 import { MissionDebriefModal } from "./MissionDebriefModal";
-import { Sparkles, Layers, Shield } from "lucide-react";
+import { Sparkles, Layers, Box, Compass } from "lucide-react";
 
-export const MineRescueSimulator: React.FC = () => {
+interface MineRescueSimulatorProps {
+  embedded?: boolean;
+}
+
+export const MineRescueSimulator: React.FC<MineRescueSimulatorProps> = ({ embedded = false }) => {
   // State Machine
   const [phase, setPhase] = useState<MissionPhaseKey>("READY");
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [progressPct, setProgressPct] = useState<number>(0);
   const [speed, setSpeed] = useState<number>(1);
   const [cameraMode, setCameraMode] = useState<CameraViewMode>("CHASE_CAM");
+  const [theme, setTheme] = useState<EnvironmentTheme>("DARK_MINE");
   const [showDebriefModal, setShowDebriefModal] = useState<boolean>(false);
 
   // Compute interpolated waypoint
@@ -98,13 +103,11 @@ export const MineRescueSimulator: React.FC = () => {
       setProgressPct((prev) => {
         const nextVal = prev + stepIncrement;
         if (nextVal >= 1.0) {
-          // Advance to next pillar
           const idx = FIVE_PILLARS.findIndex((p) => p.id === phase);
           if (idx >= 0 && idx < FIVE_PILLARS.length - 1) {
             setPhase(FIVE_PILLARS[idx + 1].id);
             return 0;
           } else {
-            // Mission complete
             setPhase("COMPLETE");
             setIsPlaying(false);
             setShowDebriefModal(true);
@@ -121,25 +124,28 @@ export const MineRescueSimulator: React.FC = () => {
   }, [isPlaying, phase, speed]);
 
   return (
-    <div className="space-y-6 font-sans">
-      {/* Top Banner / Mission Header */}
+    <section className="space-y-6 font-sans select-none">
+      {/* SECTION HEADER */}
       <div className="bg-white border border-slate-200/90 rounded-2xl p-5 sm:p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2.5">
-            <span className="p-2 bg-blue-50 text-blue-600 rounded-xl border border-blue-200/80">
-              <Sparkles className="h-5 w-5" />
+            <span className="p-2.5 bg-blue-50 text-blue-600 rounded-xl border border-blue-200/80">
+              <Box className="h-5 w-5" />
             </span>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-xl font-bold tracking-tight text-slate-900">
-                  Live 3D Mine Rescue Simulation
-                </h1>
+                <h2 className="text-xl font-bold tracking-tight text-slate-900">
+                  AUTONOMOUS MINE RESCUE SIMULATION
+                </h2>
                 <span className="text-xs bg-blue-50 border border-blue-200 text-blue-700 font-semibold px-2.5 py-0.5 rounded-full font-mono">
-                  SIH 2026 Problem ID: 26039
+                  Sector 7B Digital Twin
                 </span>
               </div>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Interactive subsurface demonstration • Autonomous ingress, multi-gas pellistors, survivor detection & safe route planning
+              <p className="text-xs text-blue-700 font-semibold italic mt-0.5">
+                &ldquo;Explore. Detect. Analyze. Connect.&rdquo;
+              </p>
+              <p className="text-[11px] text-slate-500 mt-0.5">
+                Interactive 3D Digital Twin of the Underground Mine • Depth -740m
               </p>
             </div>
           </div>
@@ -153,7 +159,7 @@ export const MineRescueSimulator: React.FC = () => {
               className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold uppercase tracking-wider flex items-center gap-2 rounded-xl transition-all shadow-md shadow-blue-500/20 active:scale-95"
             >
               <Layers className="h-4 w-4" />
-              <span>Start Mission Demo</span>
+              <span>Start Mission</span>
             </button>
           ) : (
             <button
@@ -175,7 +181,7 @@ export const MineRescueSimulator: React.FC = () => {
 
       {/* Main 3D Simulation & Telemetry Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left / Center: Interactive 3D Mine Viewport (8 Cols) */}
+        {/* Left / Center: Large 3D Viewport & Controls (8 Cols) */}
         <div className="lg:col-span-8 flex flex-col space-y-5">
           <div className="h-[520px] w-full rounded-2xl overflow-hidden shadow-subtle border border-slate-200/80">
             <MineScene3D
@@ -184,6 +190,8 @@ export const MineRescueSimulator: React.FC = () => {
               currentWaypoint={currentWaypoint}
               cameraMode={cameraMode}
               onCameraModeChange={setCameraMode}
+              theme={theme}
+              onThemeChange={setTheme}
             />
           </div>
 
@@ -205,7 +213,7 @@ export const MineRescueSimulator: React.FC = () => {
           <LiveTelemetryPanel waypoint={currentWaypoint} />
         </div>
 
-        {/* Right Column: Control Station & Minimap (4 Cols) */}
+        {/* Right Column: Control Station & Synchronized Minimap (4 Cols) */}
         <div className="lg:col-span-4 space-y-5">
           {/* Rescue Command Station C2 Panel */}
           <ControlStationPanel
@@ -227,6 +235,6 @@ export const MineRescueSimulator: React.FC = () => {
         onClose={() => setShowDebriefModal(false)}
         onReplay={replayMission}
       />
-    </div>
+    </section>
   );
 };

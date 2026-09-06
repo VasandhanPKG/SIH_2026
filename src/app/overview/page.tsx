@@ -21,6 +21,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
+import { MineRescueSimulator } from "@/components/simulator/MineRescueSimulator";
+
 export default function OverviewPage() {
   const {
     telemetry,
@@ -32,7 +34,7 @@ export default function OverviewPage() {
   const isStructuralHigh = structuralAnalysis.assessment === "HIGH" || structuralAnalysis.assessment === "CRITICAL";
 
   return (
-    <div className="space-y-6 select-none font-sans">
+    <div className="space-y-8 select-none font-sans">
       {/* Overview Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/90 pb-5">
         <div>
@@ -51,17 +53,10 @@ export default function OverviewPage() {
 
         <div className="flex flex-wrap items-center gap-2.5">
           <Link
-            href="/simulation"
-            className="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-bold flex items-center gap-2 rounded-xl transition-all shadow-md shadow-blue-500/20 active:scale-95"
-          >
-            <Sparkles className="h-4 w-4 text-cyan-300" />
-            <span>Launch 3D Simulation</span>
-            <span className="bg-white/20 text-[10px] px-1.5 py-0.2 rounded font-mono">3D</span>
-          </Link>
-          <Link
             href="/demo"
             className="px-4 py-2 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-semibold flex items-center gap-1.5 rounded-xl transition-all shadow-sm"
           >
+            <Sparkles className="h-4 w-4 text-blue-600" />
             <span>8-Stage Demo</span>
           </Link>
         </div>
@@ -116,48 +111,63 @@ export default function OverviewPage() {
         />
       </div>
 
-      {/* Main Grid: Left Tactical Map & Right Sidepanels */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left / Center Tactical Map (8 Cols) */}
-        <div className="lg:col-span-8 flex flex-col space-y-5">
-          <div className="bg-white border border-slate-200/80 rounded-2xl p-5 flex flex-col h-[520px] shadow-subtle">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
-              <div className="flex items-center gap-2.5">
-                <div className="p-1.5 rounded-lg bg-blue-50 text-blue-600">
-                  <Layers className="h-4 w-4" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold text-slate-800 tracking-tight">
-                    Subsurface SLAM Cartography
-                  </h3>
-                  <p className="text-[11px] text-slate-400 font-medium">
-                    2D/3D LiDAR point cloud registration and drift corridors
-                  </p>
-                </div>
-              </div>
-              <Link
-                href="/tactical-map"
-                className="text-xs text-blue-600 hover:text-blue-800 font-semibold flex items-center gap-1 hover:underline"
-              >
-                <span>Full Map</span>
-                <ArrowUpRight className="h-3.5 w-3.5" />
-              </Link>
-            </div>
+      {/* MAJOR CENTERPIECE: Interactive 3D Digital Twin Simulation Section */}
+      <div className="border-t border-slate-200/80 pt-6">
+        <MineRescueSimulator embedded={true} />
+      </div>
 
-            <div className="flex-1 w-full h-full relative rounded-xl overflow-hidden">
-              <TacticalMineMap compact={false} />
-            </div>
+      {/* Secondary Detailed Telemetry & SLAM Section */}
+      <div className="border-t border-slate-200/80 pt-6 space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-base font-bold text-slate-900 tracking-tight">
+              2D Tactical Cartography & Live Sensors
+            </h2>
+            <p className="text-xs text-slate-500">
+              High-resolution LiDAR registration, gas metrics, and power telemetry
+            </p>
           </div>
-
-          {/* Gas Monitors */}
-          <GasGauge />
+          <Link
+            href="/tactical-map"
+            className="text-xs text-blue-600 hover:text-blue-800 font-semibold flex items-center gap-1 hover:underline"
+          >
+            <span>Full Tactical Map</span>
+            <ArrowUpRight className="h-3.5 w-3.5" />
+          </Link>
         </div>
 
-        {/* Right Telemetry & Safe Path Cards (4 Cols) */}
-        <div className="lg:col-span-4 space-y-5">
-          <PowerTelemetry />
-          <SafePathCard />
-          <RecentEvents />
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div className="lg:col-span-8 flex flex-col space-y-5">
+            <div className="bg-white border border-slate-200/80 rounded-2xl p-5 flex flex-col h-[480px] shadow-subtle">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-1.5 rounded-lg bg-blue-50 text-blue-600">
+                    <Layers className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-800 tracking-tight">
+                      Subsurface SLAM Cartography
+                    </h3>
+                    <p className="text-[11px] text-slate-400 font-medium">
+                      2D LiDAR point cloud registration and drift corridors
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex-1 w-full h-full relative rounded-xl overflow-hidden">
+                <TacticalMineMap compact={false} />
+              </div>
+            </div>
+
+            <GasGauge />
+          </div>
+
+          <div className="lg:col-span-4 space-y-5">
+            <PowerTelemetry />
+            <SafePathCard />
+            <RecentEvents />
+          </div>
         </div>
       </div>
     </div>
